@@ -4,10 +4,11 @@ import 'package:flutter_pagination/models/petani_model.dart';
 import 'package:flutter_pagination/models/kelompok.dart';
 import 'package:flutter_pagination/models/erormsg.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiStatic {
   static final String host = 'https://dev.wefgis.com';
-  static String _token = "8|x6bKsHp9STb0uLJsM11GkWhZEYRWPbv0IqlXvFi7";
+  static String _token = "";
 
   /// Mengambil list Petani dengan pagination dan filter.
   /// [pageKey]: halaman saat ini (mulai dari 1)
@@ -166,4 +167,53 @@ static Future<bool> updatePetani(Petani petani) async {
         return [];
     }
   }
+
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+    required String deviceName,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$host/api/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "email": email,
+        "password": password,
+        "device_name": deviceName,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', data['token']);
+      await prefs.setString('user_type', data['user']['type']);
+      return {'success': true, 'type': data['user']['type']};
+    } else {
+      return {'success': false, 'message': data['message'] ?? 'Login failed'};
+    }
+  }
+
+  static Future<bool> isLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('token');
+  }
+
+  static Future<String?> getUserType() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_type');
+  }
+
+  static Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  static Future<void> getToken() async {
+    Future<SharedPreferences> preferences = SharedPreferences.getInstance();
+    final SharedPreferences  prefs = await preferences;
+    _token = prefs.getString('token') ?? "";
+    }
+  
 }

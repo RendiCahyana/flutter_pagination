@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_pagination/UI/loginpage.dart';
 // import 'package:flutter_pagination/Models/petani.dart';
 import 'package:flutter_pagination/UI/petaniPage.dart';
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: PagePetani(),
+      home: LoginPage(),
     );
   }
 }
